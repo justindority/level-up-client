@@ -1,29 +1,24 @@
-import { createEvent } from "../../managers/EventManager.js"
+import { createEvent, getEvent, updateEvent } from "../../managers/EventManager.js"
 import { useState, useEffect } from "react"
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { createGame, getGames, getGameTypes } from '../../managers/GameManager.js'
 
 
-export const EventForm = () => {
+export const UpdateEventForm = () => {
     const navigate = useNavigate()
     const [games, setGames] = useState([])
+    const {eventId} = useParams()
 
     /*
         Since the input fields are bound to the values of
         the properties of this state variable, you need to
         provide some default values.
     */
-    const [currentEvent, setCurrentEvent] = useState({
-        gameId: 0,
-        description: "",
-        date: "",
-        time: "",
-        organizer: 0
-    })
+    const [currentEvent, setCurrentEvent] = useState({})
 
     useEffect(() => {
-        // TODO: Get the game types, then set the state
         getGames().then(data => setGames(data))
+        getEvent(eventId).then(data => setCurrentEvent(data))
     }, [])
 
     const changeEventState = (domEvent) => {
@@ -35,12 +30,12 @@ export const EventForm = () => {
 
     return (
         <form className="eventForm">
-        <h2 className="eventForm_Title">Register New Event</h2>
+        <h2 className="eventForm_Title">Update Existing Event</h2>
         <fieldset>
             <div className="form-group">
                 <label htmlFor="game">Game: </label>
                 <select type="text" name="gameId" required autoFocus className="form-control"
-                    value={parseInt(currentEvent.gameId)}
+                    value={parseInt(currentEvent.game)}
                     onChange={changeEventState}>
                         <option value={0}>Select a Game</option>
                         {
@@ -81,17 +76,19 @@ export const EventForm = () => {
                 evt.preventDefault()
 
                 const event = {
-                    game: currentEvent.gameId,
+                    id: parseInt(currentEvent.id),
+                    game: parseInt(currentEvent.game),
                     description: currentEvent.description,
                     date: currentEvent.date,
-                    time: currentEvent.time
+                    time: currentEvent.time,
+                    organizer: parseInt(currentEvent.organizer)
                 }
 
                 // Send POST request to your API
-                createEvent(event)
+                updateEvent(event)
                     .then(() => navigate("/events"))
             }}
-            className="btn btn-primary">Create</button>
+            className="btn btn-primary">Update</button>
     </form>
     )
 }

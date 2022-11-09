@@ -1,35 +1,29 @@
 import { getByTitle } from "@testing-library/react"
 import { useState, useEffect } from "react"
-import { useNavigate } from 'react-router-dom'
-import { createGame, getGameTypes } from '../../managers/GameManager.js'
+import { useNavigate, useParams } from 'react-router-dom'
+import { createGame, getGame, getGameTypes, updateGame } from '../../managers/GameManager.js'
 import { getGamers } from "../../managers/GamerManager.js"
 
 
 
-export const GameForm = () => {
+export const UpdateGameForm = () => {
     const navigate = useNavigate()
     const [gameTypes, setGameTypes] = useState([])
+    const {gameId} = useParams()
 
     /*
         Since the input fields are bound to the values of
         the properties of this state variable, you need to
         provide some default values.
     */
-    const [currentGame, setCurrentGame] = useState({
-        skillLevel: 0,
-        numberOfPlayers: 0,
-        title: "",
-        maker: "",
-        gameTypeId: 0
-    })
+    const [currentGame, setCurrentGame] = useState({})
 
     useEffect(() => {
-        // TODO: Get the game types, then set the state
         getGameTypes().then(data => setGameTypes(data))
+        getGame(gameId).then(data => setCurrentGame(data))
     }, [])
 
     const changeGameState = (domEvent) => {
-        // TODO: Complete the onChange function
         let stateGame = Object.assign({}, currentGame)
         stateGame[domEvent.target.name] = domEvent.target.value
         setCurrentGame(stateGame)
@@ -37,7 +31,7 @@ export const GameForm = () => {
 
     return (
         <form className="gameForm">
-            <h2 className="gameForm__title">Register New Game</h2>
+            <h2 className="gameForm__title">Update Game</h2>
             <fieldset>
                 <div className="form-group">
                     <label htmlFor="title">Title: </label>
@@ -55,22 +49,22 @@ export const GameForm = () => {
                 </div>
                 <div className="form-group">
                     <label htmlFor="numberOfPlayers">Number of Players: </label>
-                    <input type="text" name="numberOfPlayers" required className="form-control"
-                        value={currentGame.numberOfPlayers}
+                    <input type="text" name="number_of_players" required className="form-control"
+                        value={currentGame.number_of_players}
                         onChange={changeGameState}
                     />
                 </div>
                 <div className="form-group">
                     <label htmlFor="skillLevel">Skill Level From 1 (easiest) to 10 (hardest): </label>
-                    <input type="text" name="skillLevel" required className="form-control"
-                        value={currentGame.skillLevel}
+                    <input type="text" name="skill_level" required className="form-control"
+                        value={currentGame.skill_level}
                         onChange={changeGameState}
                     />
                 </div>
                 <div className="form-group">
                     <label htmlFor="gameType">Game Type: </label>
-                    <select type="text" name="gameTypeId" required autoFocus className="form-control"
-                        value={parseInt(currentGame.gameTypeId)}
+                    <select type="text" name="game_type" required autoFocus className="form-control"
+                        value={parseInt(currentGame.game_type)}
                         onChange={changeGameState}>
                         <option value={0}>Select a Game Type</option>
 
@@ -93,18 +87,20 @@ export const GameForm = () => {
                     evt.preventDefault()
 
                     const game = {
+                        id: parseInt(gameId),
                         maker: currentGame.maker,
                         title: currentGame.title,
-                        number_of_players: parseInt(currentGame.numberOfPlayers),
-                        skill_level: parseInt(currentGame.skillLevel),
-                        game_type: parseInt(currentGame.gameTypeId)
+                        number_of_players: parseInt(currentGame.number_of_players),
+                        skill_level: parseInt(currentGame.skill_level),
+                        game_type: parseInt(currentGame.game_type),
+                        gamer: parseInt(currentGame.gamer)
                     }
 
                     // Send POST request to your API
-                    createGame(game)
+                    updateGame(game)
                         .then(() => navigate("/"))
                 }}
-                className="btn btn-primary">Create</button>
+                className="btn btn-primary">Update</button>
         </form>
     )
 }
